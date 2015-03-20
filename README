@@ -1,0 +1,25 @@
+hw09: Advanced shaders
+
+Bruno Henrique Gouveia
+
+I used tesselation and geometry shaders with techniques from previous homework (such as normal map) to make that each face of a cube be an approximation of a terrain.
+In order to do that, I just used an height map. In the tesselation shader, when I create a new vertex, I add the height of the terraint to this point (we use the normal to see in which direction we should add the height).
+
+There are a lot of technical details, but they are basically variations from previous homework.
+
+You can change de inner and outer levels to get a better or worst approximation of the terrain.
+
+I spent 6 hours, because tesselation and geometry shader were kind of confusing, so I had to figure out how they work exactly.
+
+
+This program requires OpenGL 4.0 or above
+Key bindings
+  +/-        Increase/decrease inner and outer
+  i/I        Increase/decrease inner
+  o/O        Increase/decrease outer
+  r          Reset inner/outer levels
+  a          Toggle axes
+  arrows     Change view angle
+  PgDn/PgUp  Zoom in and out
+  0          Reset view angle
+  ESC        Exit

@@ -1,0 +1,66 @@
+//  Geodesic Tesselation Evalution Shader
+
+#version 400
+
+//  Equilateral triangles in (CW order)
+layout(triangles, equal_spacing, cw) in;
+
+//  Transformation matrices
+uniform Projection {
+   // Projection Matrix
+   mat4 ProjectionMatrix;
+   // ModelView Matrix
+   mat4 ModelViewMatrix;
+   // Normal matrix;
+   mat4 normalMatrix;
+   // ModelViewProjection Matrix
+   mat4 MVP;
+} projection;
+
+//  Texture
+uniform sampler2D text;
+uniform sampler2D heightMap;
+uniform sampler2D normalMap;
+
+//  Coordinates in and out
+in vec3 tcPosition[];
+in vec3 tcNormal[];
+in vec3 tcTangent[];
+in vec3 tcFrontColor[];
+in vec2 tcTextCoord[];
+
+out vec3 tePosition;
+out vec3 teNormal;
+out vec3 teTangent;
+out vec3 teFrontColor;
+out vec2 teTextCoord;
+out vec3 tePatchDistance;
+
+vec2 interpolate2D(vec2 p0, vec2 p1, vec2 p2) {
+   return gl_TessCoord.x * p0 + gl_TessCoord.y * p1 + gl_TessCoord.z * p2;
+}
+
+vec3 interpolate3D(vec3 p0, vec3 p1, vec3 p2) {
+   return gl_TessCoord.x * p0 + gl_TessCoord.y * p1 + gl_TessCoord.z * p2;
+}
+
+void main()
+{
+   //  Distance to edge of patch for interpolation
+   tePatchDistance = gl_TessCoord;
+
+   //  Interpolate to attributes
+   teNormal     = mat3(projection.normalMatrix) * interpolate3D(tcNormal[0],tcNormal[1],tcNormal[2]);
+   teTangent    = mat3(projection.normalMatrix) * interpolate3D(tcTangent[0],tcTangent[1],tcTangent[2]);
+   teFrontColor = interpolate3D(tcFrontColor[0],tcFrontColor[1],tcFrontColor[2]);
+   teTextCoord  = interpolate2D(tcTextCoord[0],tcTextCoord[1],tcTextCoord[2]);
+
+   //  Set interpolated vertex transformed according to the height map
+   vec4 vertex = vec4(interpolate3D(tcPosition[0],tcPosition[1],tcPosition[2]) + (0.3*length(texture(heightMap,teTextCoord.st)) * interpolate3D(tcNormal[0],tcNormal[1],tcNormal[2])), 1);
+
+   //  Set the interpolated position
+   tePosition   = vec3(projection.ModelViewMatrix * vertex);
+
+   //  Project vertex
+   gl_Position = projection.ProjectionMatrix * projection.ModelViewMatrix * vertex;
+}
